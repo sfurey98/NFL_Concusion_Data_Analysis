@@ -1,0 +1,169 @@
+---
+title: "Project 1 Data Analytics"
+author: "Skylar Furey"
+output:
+  pdf_document: 
+  css: style.css
+pdf_document: default
+---
+  
+  <style type="text/css">
+  
+  body{ /* Normal  */
+      font-size: 16px;
+  }
+td {  /* Table  */
+    font-size: 8px;
+}
+h1.title {
+  font-size: 38px;
+  color: DarkRed;
+}
+h1 { /* Header 1 */
+    font-size: 28px;
+  color: DarkBlue;
+}
+h2 { /* Header 2 */
+    font-size: 22px;
+  color: DarkBlue;
+}
+h3 { /* Header 3 */
+    font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: DarkBlue;
+}
+code.r{ /* Code block */
+    font-size: 16px;
+}
+pre { /* Code block - determines code spacing between lines */
+    font-size: 16px;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F, comment = NA, message = FALSE,fig.width=7, fig.height=4)
+```
+
+## Data Sample #
+
+```{r}
+Concussions <- read.csv("~/Desktop/Data Mining/STT450_R_Folder/Concussion.csv", header = TRUE)
+data <- head(Concussions)
+data[,1:5]
+```
+```{r}
+data[,6:9]
+```
+
+## To-do-list-1 #
+For the "Students" dataset, summarize each variable graphically and draw conclusions on your findings. 
+
+### One Categorical Var- Graphical Summary - Pie Chart #
+
+```{r}
+pie(table(Concussions$Season) , main = "Seasons", col = c(5, 3,2, 4))
+```
+
+### One Categorical Var- Graphical Summary - Box Plot #
+
+```{r}
+par(mfrow=c(1,2))
+boxplot(Concussions$Playtime_Before, main="Playtime Before Injury", horizontal = TRUE, col=7, xlab = "downs")
+boxplot(Concussions$Playtime_After, main="Playtime After Injury", horizontal = TRUE, col=3, xlab = "downs")
+```
+
+### One Numerical Var - Graphical Summary - Histogram #
+
+```{r}
+par(mfrow=c(1,2))
+missedHist <- hist(Concussions$Games_Missed, main = "Games Missed", xlab = "games missed", ylab= "count", col=2)
+lostHist <- hist(Concussions$Playtime_Lost, main = "Playtime Lost", xlab = "downs lost in return game", ylab= "count", col = 5)
+```
+```{r}
+names <- c("Center", "Cornerback", "Defensive Back", "Defensive End", "Defensive Tackle", "Full Back", "Guard", "Linebacker", "Quarterback", "Running Back", "Safety", "Tackle", "Tight End", "Wide Receiver")
+barplot(table(Concussions$Position), main="Position Distribution", xlab="position", ylab="count",col= c(2,3,4,5,6,7),names.arg = names, cex.names=0.5, las= 2)
+```
+
+The pie chart depicts my biggest concern with this data set, the lack of equal distribution of concussions between seasons. The 204/2015 season had many less reported concussions than the other years. This could have been for a variety of reasons; a couple being the players didn't report their injuries, or the players were safer about how they played.
+
+The box plots above show that players tended to play close to 50 downs in games before their injuries on average. Some players averaged up to 80 downs per game before their injuries while others didn't see the field. After injuries players only averaged about 40 downs in their game returning after the injury. Some players never returned that season while others played up to 100 downs in their return. Therefore players played about 10 games less on average in their return games than they did in games leading up to the injury. This is most likely due to players and teams wanting to make sure the player has fully recovered and does not suffer another concussion.
+
+In the first histogram, Games Missed, you can see that majority of the players did not have to sit out a game after suffering a concussion. The distribution is highly skewed to the right as expected, with only seven players missing double digit games. 
+
+The Playtime Lost plot shows that majority of the players weren't significantly impacted by their injury and were able to play within ten downs of what the averaged in games prior to the injury. Majority of players actually gained play time in their return but the plot is skewed left since a few players lost more playing time than anyone gained. 
+
+From the Position Distribution plot you can see that most positions make players equally susceptible to concussions. Cornerbacks are the most susceptible with nearly 100 cornerbacks sustaining a concussion over the four year span. The fullbacks count is very low due to the position not being used as much in the NFL anymore do to the changes in the playstyle of professional football. Defensive Back is also lacking because these players are versatile and can play both Safety and Cornerback whereas most players are position specific.
+
+
+## To-do-list-2 #
+For the "Students" dataset, summarize each variable numerically and draw conclusions on your findings. 
+
+### One Categorical Var- Numerical Summary- Frequency Table #
+
+Concussion Distribution by Team
+```{r}
+table(Concussions$Team)
+```
+
+### One Numerical Var - Numerical Summary - 5 Number Summary #
+
+```{r}
+names <- c("Games_Missed", "Playtime_Before", "Playtime_After", "Playtime_Lost")
+summary(Concussions[,names])
+```
+
+### One Numerical Var - Numerical Summary - Correlation Table #
+
+```{r}
+names <- c("Games_Missed", "Playtime_Before", "Playtime_After", "Playtime_Lost")
+(CORR=cor(Concussions[,names]))
+```
+
+From the frequency table, you can see that most teams had around 10-15 players get hurt over the four year period. The Cleveland Browns suffered the most with 33 concussions, averaging about 8 a year, which is about a concussion every other game. There staff needs to learn from the Falcons whose players only suffered 9 in the whole four year period. Only one more than the the Browns averaged per season.
+
+The 5 number summaries show that players played 4.715 less downs in their return game versus what they averaged in games prior to the injury. This is most likely due to the fact that at least 75 percent of players missed one or no games so their concussions weren't very significant. 
+
+We can see there is little correlation between Games Missed, Playtime Before, Playtime After, and Playtime Lost. The biggest correlation is between Playtime After and Playtime Lost. This makes sense because players that play alot in their return game won't be able to loss that many downs as they could have only played a certain amount of downs in the games before the injury. We also see some positive correlation in Playtime Before and Playtime Lost, this is due the fact that the more downs you average before the injury then you have more downs to lose due to the injury.
+
+## To-do-list-3 #
+For the "Students" dataset, explore numerically important association between any two variables and recognize such patterns. Then draw  conclusions on your findings. 
+
+### Two Categorical Var - Numerical Summary - Contingency Table #
+
+```{r}
+posvsseason <- with(Concussions, table(Position, Season))
+posvsseason
+```
+```{r}
+teamvsseason <- with(Concussions, table(Team, Season))
+teamvsseason
+```
+```{r}
+teamvsmissed <- with(Concussions, table(Team, Games_Missed))
+teamvsmissed
+```
+```{r}
+Concussions$Position = as.factor(Concussions$Position)
+Concussions$Team = as.factor(Concussions$Team)
+with(Concussions, table(Position, Games_Missed))
+```
+
+The Position vs Season table shows that some positions were more likely to suffer positions in more recent years versus later years. Cornerbacks for example had much more reported concussion in the most recent season of 2015/2016 versus the three seasons prior. The 38 injuries in 2025/2016 was more than the previous 2 years combined. You can also see once again the full back position becoming less relevant as no full backs suffered concussions in the last 2 years of the study. 
+
+The Team vs Season table reinforces that the Cleveland Browns suffered the most concussions during the studied period of time. Yet of the 33 concussions they suffered, nearly half of them were suffered in the 2015/2016 season. The most concussions suffered by a team in a year was barely another team in the same year of 2015/2016 by the San Diego Chargers with 16 concussions. Many teams did not have a concussion in the 2014/2015 season but only the Buffalo Bills were fully healthy in any other year. 
+
+The Team vs Games Missed table show that the Kansas City Chiefs had a player miss 14 games in a season. Two teams, the Jaguars and Colts, had players miss 13 games in a season. The Steelers players either played through injuries or only suffered minor concussions; out of the 18 concussions the team suffered, 15 players didn't miss a game while the other 3 only missed a single game. Many of the Brown's concussions were luckily not very serious as about 2/3 of the injuries didn't sideline a player for more than a week and only 2 injuries lasted longer than 5 games.
+
+The Position vs Games Missed shows although cornerbacks suffered the most injuries (90), over half of those injuries did not cause the player to miss a game. Quarterbacks concussions seemed to be the worst as about a third of the injuries resulting in two or more games missed. This is most likely due to the fact that when quarterbacks suffer concussions they are being caused by players 100 pounds bigger than them. Running backs typically suffer their concussions in similar situations yet time missed typically isn't as severe except for an outlier where a running back missed 13 games.
+
+## To-do-list-4 #
+For the "Students" dataset, explore graphically important association between any two variables and recognize such patterns. Then draw  conclusions on your findings. 
+
+### Two Categorical Var - Graphical Summary - Pairs Diagram #
+
+```{r}
+names <- c("Games_Missed", "Playtime_Before", "Playtime_After", "Playtime_Lost")
+pairs(Concussions[,names], col= 6)
+```
+
+From these plots, a few relationships stick out. The first being the correlation between Playtime After and Playtime Lost. You can see a clear visual negative correlation. As Playtime After increases Playtime Lost decreases since you can't lose a bunch of downs if you play a bunch in your returned as explained previously.

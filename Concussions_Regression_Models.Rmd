@@ -1,0 +1,96 @@
+---
+title: "Project 2 Data Analytics"
+author: "Skylar Furey"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, comment = NA, message = FALSE,fig.width=7, fig.height=4)
+```
+
+```{r}
+Concussions <- read.csv("~/Desktop/Data Mining/STT450_R_Folder/Concussion.csv", header = TRUE)
+```
+
+## Simple Linear Regression Model #
+
+```{r}
+lm.fit =lm(Playtime_After~Playtime_Before, data= Concussions)
+```
+
+### Simple Linear Regression Model- Numerical Fit
+
+```{r}
+summary(lm.fit)
+```
+
+### Simple Linear Regression Model- Graphical Fit
+
+```{r}
+par(mfrow= c(2,2))
+plot(lm.fit, col= 3)
+```
+
+```{r}
+plot(Concussions$Playtime_Before, Concussions$Playtime_After, xlab= "Playtime Before", ylab= "Playtime After")
+abline(lm.fit, lwd= 3, col= "red")
+```
+
+### Simple Linear Regression Model- ANOVA Table 
+
+```{r}
+anova(lm.fit)
+```
+
+## Interaction Terms #
+
+```{r}
+lm.fit2 =lm(Playtime_After~Playtime_Before * Games_Missed, data= Concussions)
+```
+
+### Interaction Terms- Numerical Fit 
+
+```{r}
+summary(lm.fit2)
+```
+
+### Interaction Terms- Graphical Fit 
+
+```{r}
+par(mfrow= c(2,2))
+plot(lm.fit2, col=5)
+```
+
+### Interaction Terms- ANOVA Table
+
+```{r}
+anova(lm.fit2)
+```
+
+## Quadratic Linear Regression Model
+
+```{r}
+lm.fit3= lm(Concussions$Playtime_After~Concussions$Games_Missed)
+lm.fit4= lm(Concussions$Playtime_After~poly(Concussions$Games_Missed, 2, raw=T))
+
+```
+
+### Quadratic Linear Regression Model- Numerical Fit
+
+```{r}
+summary(lm.fit4)
+```
+
+### Quadratic Linear Regression Model- Graphical Fit
+
+```{r}
+par(mfrow= c(2,4))
+plot(lm.fit3, col=6)
+plot(lm.fit4, col=7)
+```
+
+### Quadratic Linear Regression Model- ANOVA Table 
+
+```{r}
+anova(lm.fit3, lm.fit4)
+```

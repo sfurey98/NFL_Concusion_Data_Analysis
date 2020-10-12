@@ -1,0 +1,82 @@
+---
+title: "Project 3 Data Analytics"
+author: "Skylar Furey"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, comment = NA, message = FALSE,fig.width=7, fig.height=4)
+```
+
+```{r}
+library(ISLR)
+library(leaps)
+Concussions <- read.csv("~/Desktop/Data Mining/STT450_R_Folder/Concussion.csv", header = TRUE)
+Concussions$Position = as.factor(Concussions$Position)
+Concussions$Team = as.factor(Concussions$Team)
+Concussions$Season = as.factor(Concussions$Season)
+Concussions$Winning_Team = as.factor(Concussions$Winning_Team)
+```
+
+## Best #
+
+```{r}
+regfit.full=regsubsets(Playtime_After~Playtime_Before+Winning_Team+Games_Missed,Concussions)
+summary(regfit.full)
+```
+
+```{r}
+reg.summary=summary(regfit.full)
+reg.summary$rsq
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(reg.summary$adjr2,xlab="Number of Variables",ylab="Adjusted RSq",type="l")
+which.max(reg.summary$adjr2)
+points(2,reg.summary$adjr2[2], col="red",cex=2,pch=20)
+plot(reg.summary$cp,xlab="Number of Variables",ylab="Cp",type='l')
+which.min(reg.summary$cp)
+points(2,reg.summary$cp[2],col="red",cex=2,pch=20)
+which.min(reg.summary$bic)
+plot(reg.summary$bic,xlab="Number of Variables",ylab="BIC",type='l')
+points(2,reg.summary$bic[2],col="red",cex=2,pch=20)
+```
+
+```{r}
+plot(regfit.full,scale="adjr2")
+```
+
+```{r}
+plot(regfit.full,scale="Cp")
+```
+
+```{r}
+plot(regfit.full,scale="bic")
+```
+
+## Forward #
+
+```{r}
+regfit.fwd=regsubsets(Playtime_After~Playtime_Before+Winning_Team+Games_Missed,Concussions,method="forward")
+summary(regfit.fwd)
+```
+
+## Backward #
+
+```{r}
+regfit.bwd=regsubsets(Playtime_After~Playtime_Before+Winning_Team+Games_Missed,Concussions, method="backward")
+summary(regfit.bwd)
+```
+
+## Coefficients #
+
+```{r}
+coef(regfit.full,3)
+```
+```{r}
+coef(regfit.fwd,3)
+```
+```{r}
+coef(regfit.bwd,3)
+```
