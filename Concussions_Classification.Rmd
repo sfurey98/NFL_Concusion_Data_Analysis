@@ -1,0 +1,602 @@
+---
+title: "Project 4 Data Analytics"
+author: "Skylar Furey"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, comment = NA, message = FALSE,fig.width=7, fig.height=4)
+```
+
+```{r}
+library(ISLR)
+library(leaps)
+library(caTools)
+Concussions <- read.csv("~/Desktop/Data Mining/STT450_R_Folder/Concussion.csv", header = TRUE)
+Concussions$Position = as.factor(Concussions$Position)
+Concussions$Team = as.factor(Concussions$Team)
+Concussions$Season = as.factor(Concussions$Season)
+Concussions$Winning_Team = as.factor(Concussions$Winning_Team)
+```
+
+```{r}
+#FULL MODEL
+```
+
+```{r}
+Actual_Full= Concussions$Winning_Team
+```
+
+```{r}
+## LOG Full Model
+```
+
+```{r}
+start.time <- Sys.time()
+glm.fit_Full=glm(Winning_Team~Playtime_Before+Games_Missed,data=Concussions,family=binomial)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+glm.probs_Full=predict(glm.fit,type="response")
+glm.pred_Full=rep("1",516)
+glm.pred_Full[glm.probs_Full>.5]="0"
+```
+
+```{r}
+Confussion_Log_Full= table(glm.pred_Full,Actual_Full)
+Confussion_Log_Full
+
+```
+
+```{r}
+Accuracy_Log_Full= mean(glm.pred_Full==Actual_Full)
+Accuracy_Log_Full
+```
+
+```{r}
+Sensitivity_Log_Full= Confussion_Log_Full[2,2]/(Confussion_Log_Full[1,2]+Confussion_Log_Full[2,2])
+Sensitivity_Log_Full
+```
+
+```{r}
+Specificity_Log_Full= Confussion_Log_Full[1,1]/(Confussion_Log_Full[1,1]+Confussion_Log_Full[2,1])
+Specificity_Log_Full
+```
+
+```{r}
+## LDA Full Model
+```
+
+```{r}
+start.time <- Sys.time()
+lda.fit_Full=MASS::lda(Winning_Team~Playtime_Before+Games_Missed,data=Concussions)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+```
+
+```{r}
+lda.pred_Full=predict(lda.fit_Full, Concussions) 
+lda.class_Full=lda.pred_Full$class
+```
+
+```{r}
+Confussion_LDA_Full= table(lda.class_Full,Actual_Full)
+Confussion_LDA_Full
+```
+
+```{r}
+Accuracy_LDA_Full= mean(lda.class_Full==Actual_Full)
+Accuracy_LDA_Full
+```
+
+```{r}
+Sensitivity_LDA_Full= Confussion_LDA_Full[2,2]/(Confussion_LDA_Full[1,2]+Confussion_LDA_Full[2,2])
+Sensitivity_LDA_Full
+```
+
+```{r}
+Specificity_LDA_Full= Confussion_LDA_Full[1,1]/(Confussion_LDA_Full[1,1]+Confussion_LDA_Full[2,1])
+Specificity_LDA_Full
+```
+
+```{r}
+## QDA Full Model
+```
+
+```{r}
+start.time <- Sys.time()
+qda.fit_Full=MASS::qda(Winning_Team~Playtime_Before+Games_Missed,data=Concussions)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+```
+
+```{r}
+qda.pred_Full=predict(qda.fit_Full, Concussions) 
+qda.class_Full=qda.pred_Full$class
+```
+
+```{r}
+Confussion_QDA_Full= table(qda.class_Full,Actual_Full)
+Confussion_QDA_Full
+```
+
+```{r}
+Accuracy_QDA_Full= mean(qda.class_Full==Actual_Full)
+Accuracy_QDA_Full
+```
+
+```{r}
+Sensitivity_QDA_Full= Confussion_QDA_Full[2,2]/(Confussion_QDA_Full[1,2]+Confussion_QDA_Full[2,2])
+Sensitivity_QDA_Full
+```
+
+```{r}
+Specificity_QDA_Full= Confussion_QDA_Full[1,1]/(Confussion_QDA_Full[1,1]+Confussion_QDA_Full[2,1])
+Specificity_QDA_Full
+```
+
+```{r}
+## KNN Full
+```
+
+```{r}
+library(class)
+train.X_Full= Concussions[,6:7] ##set up training_X set
+test.X_Full= Concussions[,6:7] ##set up testing_X set
+train.Y_Full=Concussions[,4] ##set up training_y
+test.Y_Full=Concussions[,4]
+```
+
+```{r}
+## KNN K=3 Full
+```
+
+```{r}
+start.time <- Sys.time()
+knn3_Full.pred=knn(train.X_Full,test.X_Full,train.Y_Full,k=3)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+```
+
+```{r}
+Confussion_KNN3_Full= table(knn3_Full.pred,test.Y_Full)
+Confussion_KNN3_Full
+```
+
+```{r}
+Accuracy_KNN3_Full= mean(knn3_Full.pred==test.Y_Full)
+Accuracy_KNN3_Full
+```
+
+```{r}
+Sensitivity_KNN3_Full= Confussion_KNN3_Full[2,2]/(Confussion_KNN3_Full[1,2]+Confussion_KNN3_Full[2,2])
+Sensitivity_KNN3_Full
+```
+
+```{r}
+Specificity_KNN3_50= Confussion_KNN3_Full[1,1]/(Confussion_KNN3_Full[1,1]+Confussion_KNN3_Full[2,1])
+Specificity_KNN3_50
+```
+
+```{r}
+## KNN K=4 Full
+```
+
+```{r}
+start.time <- Sys.time()
+knn4_Full.pred=knn(train.X_Full,test.X_Full,train.Y_Full,k=4)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+```
+
+```{r}
+Confussion_KNN4_Full= table(knn4_Full.pred,test.Y_Full)
+Confussion_KNN4_Full
+```
+
+```{r}
+Accuracy_KNN4_Full= mean(knn4_Full.pred==test.Y_Full)
+Accuracy_KNN4_Full
+```
+
+```{r}
+Sensitivity_KNN4_Full= Confussion_KNN4_Full[2,2]/(Confussion_KNN4_Full[1,2]+Confussion_KNN4_Full[2,2])
+Sensitivity_KNN4_Full
+```
+
+```{r}
+Specificity_KNN4_50= Confussion_KNN4_Full[1,1]/(Confussion_KNN4_Full[1,1]+Confussion_KNN4_Full[2,1])
+Specificity_KNN4_50
+```
+
+```{r}
+## KNN K=5 Full
+```
+
+```{r}
+start.time <- Sys.time()
+knn5_Full.pred=knn(train.X_Full,test.X_Full,train.Y_Full,k=5)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+```
+
+```{r}
+Confussion_KNN5_Full= table(knn5_Full.pred,test.Y_Full)
+Confussion_KNN5_Full
+```
+
+```{r}
+Accuracy_KNN5_Full= mean(knn5_Full.pred==test.Y_Full)
+Accuracy_KNN5_Full
+```
+
+```{r}
+Sensitivity_KNN5_Full= Confussion_KNN5_Full[2,2]/(Confussion_KNN5_Full[1,2]+Confussion_KNN5_Full[2,2])
+Sensitivity_KNN5_Full
+```
+
+```{r}
+Specificity_KNN5_50= Confussion_KNN5_Full[1,1]/(Confussion_KNN5_Full[1,1]+Confussion_KNN5_Full[2,1])
+Specificity_KNN5_50
+```
+
+```{r}
+## KNN K=6 Full
+```
+
+```{r}
+start.time <- Sys.time()
+knn6_Full.pred=knn(train.X_Full,test.X_Full,train.Y_Full,k=6)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+```
+
+```{r}
+Confussion_KNN6_Full= table(knn6_Full.pred,test.Y_Full)
+Confussion_KNN6_Full
+```
+
+```{r}
+Accuracy_KNN6_Full= mean(knn6_Full.pred==test.Y_Full)
+Accuracy_KNN6_Full
+```
+
+```{r}
+Sensitivity_KNN6_Full= Confussion_KNN6_Full[2,2]/(Confussion_KNN6_Full[1,2]+Confussion_KNN6_Full[2,2])
+Sensitivity_KNN6_Full
+```
+
+```{r}
+Specificity_KNN6_50= Confussion_KNN6_Full[1,1]/(Confussion_KNN6_Full[1,1]+Confussion_KNN6_Full[2,1])
+Specificity_KNN6_50
+```
+
+```{r}
+## KNN K=7 Full
+```
+
+```{r}
+start.time <- Sys.time()
+knn7_Full.pred=knn(train.X_Full,test.X_Full,train.Y_Full,k=7)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+```
+
+```{r}
+Confussion_KNN7_Full= table(knn7_Full.pred,test.Y_Full)
+Confussion_KNN7_Full
+```
+
+```{r}
+Accuracy_KNN7_Full= mean(knn7_Full.pred==test.Y_Full)
+Accuracy_KNN7_Full
+```
+
+```{r}
+Sensitivity_KNN7_Full= Confussion_KNN7_Full[2,2]/(Confussion_KNN7_Full[1,2]+Confussion_KNN7_Full[2,2])
+Sensitivity_KNN7_Full
+```
+
+```{r}
+Specificity_KNN7_50= Confussion_KNN7_Full[1,1]/(Confussion_KNN7_Full[1,1]+Confussion_KNN7_Full[2,1])
+Specificity_KNN7_50
+```
+
+```{r}
+#50% MODEL
+```
+
+```{r}
+set.seed(3)
+train= Concussions[1:258, ]
+test= Concussions[259:516, ]
+Actual= test$Winning_Team
+```
+
+```{r}
+## LOG 50% Model
+```
+
+```{r}
+start.time <- Sys.time()
+glm.fit_50=glm(Winning_Team~Playtime_Before+Games_Missed,data=train,family=binomial)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+glm.probs_50=predict(glm.fit_50,test,type="response")
+glm.pred_50=rep("1", 258)
+glm.pred_50[glm.probs_50<.5]="0"
+```
+
+```{r}
+Confussion_Log_50= table(glm.pred_50,Actual)
+Confussion_Log_50
+```
+
+```{r}
+Accuracy_LOG_50= mean(glm.pred_50==Actual)
+Accuracy_LOG_50
+```
+
+```{r}
+Sensitivity_Log_50= Confussion_Log_50[2,2]/(Confussion_Log_50[1,2]+Confussion_Log_50[2,2])
+Sensitivity_Log_50
+```
+
+```{r}
+Specificity_Log_50= Confussion_Log_50[1,1]/(Confussion_Log_50[1,1]+Confussion_Log_50[2,1])
+Specificity_Log_50
+```
+
+```{r}
+## LDA 50% Model
+```
+
+```{r}
+start.time <- Sys.time()
+lda.fit_50=MASS::lda(Winning_Team~Playtime_Before+Games_Missed,data=train)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+```
+
+```{r}
+lda.pred_50=predict(lda.fit_50, test) 
+lda.class_50=lda.pred_50$class
+```
+
+```{r}
+Confussion_LDA_50= table(lda.class_50,Actual)
+Confussion_LDA_50
+```
+
+```{r}
+Accuracy_LDA_50= mean(lda.class_50==Actual)
+Accuracy_LDA_50
+```
+
+```{r}
+Sensitivity_LDA_50= Confussion_LDA_50[2,2]/(Confussion_LDA_50[1,2]+Confussion_LDA_50[2,2])
+Sensitivity_LDA_50
+```
+
+```{r}
+Specificity_LDA_50= Confussion_LDA_50[1,1]/(Confussion_LDA_50[1,1]+Confussion_LDA_50[2,1])
+Specificity_LDA_50
+```
+
+```{r}
+## QDA 50% Model
+```
+
+```{r}
+start.time <- Sys.time()
+qda.fit_50=MASS::qda(Winning_Team~Playtime_Before+Games_Missed,data=train)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+```
+
+```{r}
+qda.pred_50=predict(qda.fit_50, test) 
+qda.class_50=qda.pred_50$class
+```
+
+```{r}
+Confussion_QDA_50= table(qda.class_50,Actual)
+Confussion_QDA_50
+```
+
+```{r}
+Accuracy_QDA_50= mean(qda.class_50==Actual)
+Accuracy_QDA_50
+```
+
+```{r}
+Sensitivity_QDA_50= Confussion_QDA_50[2,2]/(Confussion_QDA_50[1,2]+Confussion_QDA_50[2,2])
+Sensitivity_QDA_50
+```
+
+```{r}
+Specificity_QDA_50= Confussion_QDA_50[1,1]/(Confussion_QDA_50[1,1]+Confussion_QDA_50[2,1])
+Specificity_QDA_50
+```
+
+```{r}
+## KNN 50%
+```
+
+```{r}
+library(class)
+train.X_50= Concussions[1:258,6:7]
+test.X_50= Concussions[259:516,6:7]
+train.Y_50=Concussions[1:258,4]
+test.Y_50=Concussions[259:516,4]
+```
+
+```{r}
+## KNN K=3 50%
+```
+
+```{r}
+start.time <- Sys.time()
+knn3_50.pred=knn(train.X_50,test.X_50,train.Y_50,k=3)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+```
+
+```{r}
+Confussion_KNN3_50= table(knn3_50.pred,test.Y_50)
+Confussion_KNN3_50
+```
+
+```{r}
+Accuracy_KNN3_50= mean(knn3_50.pred==test.Y_50)
+Accuracy_KNN3_50
+```
+
+```{r}
+Sensitivity_KNN3_50= Confussion_KNN3_50[2,2]/(Confussion_KNN3_50[1,2]+Confussion_KNN3_50[2,2])
+Sensitivity_KNN3_50
+```
+
+```{r}
+Specificity_KNN3_50= Confussion_KNN3_50[1,1]/(Confussion_KNN3_50[1,1]+Confussion_KNN3_50[2,1])
+Specificity_KNN3_50
+```
+
+```{r}
+## KNN K=4 50%
+```
+
+```{r}
+start.time <- Sys.time()
+knn4_50.pred=knn(train.X_50,test.X_50,train.Y_50,k=4)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+```
+
+```{r}
+Confussion_KNN4_50= table(knn4_50.pred,test.Y_50)
+Confussion_KNN4_50
+```
+
+```{r}
+Accuracy_KNN4_50= mean(knn4_50.pred==test.Y_50)
+Accuracy_KNN4_50
+```
+
+```{r}
+Sensitivity_KNN4_50= Confussion_KNN4_50[2,2]/(Confussion_KNN4_50[1,2]+Confussion_KNN4_50[2,2])
+Sensitivity_KNN4_50
+```
+
+```{r}
+Specificity_KNN4_50= Confussion_KNN4_50[1,1]/(Confussion_KNN4_50[1,1]+Confussion_KNN4_50[2,1])
+Specificity_KNN4_50
+```
+
+```{r}
+## KNN K=5 50%
+```
+
+```{r}
+start.time <- Sys.time()
+knn5_50.pred=knn(train.X_50,test.X_50,train.Y_50,k=5)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+```
+
+```{r}
+Confussion_KNN5_50= table(knn5_50.pred,test.Y_50)
+Confussion_KNN5_50
+```
+
+```{r}
+Accuracy_KNN5_50= mean(knn5_50.pred==test.Y_50)
+Accuracy_KNN5_50
+```
+
+```{r}
+Sensitivity_KNN5_50= Confussion_KNN5_50[2,2]/(Confussion_KNN5_50[1,2]+Confussion_KNN5_50[2,2])
+Sensitivity_KNN5_50
+```
+
+```{r}
+Specificity_KNN5_50= Confussion_KNN5_50[1,1]/(Confussion_KNN5_50[1,1]+Confussion_KNN5_50[2,1])
+Specificity_KNN5_50
+```
+
+```{r}
+## KNN K=6 50%
+```
+
+```{r}
+start.time <- Sys.time()
+knn6_50.pred=knn(train.X_50,test.X_50,train.Y_50,k=6)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+```
+
+```{r}
+Confussion_KNN6_50= table(knn6_50.pred,test.Y_50)
+Confussion_KNN6_50
+```
+
+```{r}
+Accuracy_KNN6_50= mean(knn6_50.pred==test.Y_50)
+Accuracy_KNN6_50
+```
+
+```{r}
+Sensitivity_KNN6_50= Confussion_KNN6_50[2,2]/(Confussion_KNN6_50[1,2]+Confussion_KNN6_50[2,2])
+Sensitivity_KNN6_50
+```
+
+```{r}
+Specificity_KNN6_50= Confussion_KNN6_50[1,1]/(Confussion_KNN6_50[1,1]+Confussion_KNN6_50[2,1])
+Specificity_KNN6_50
+```
+
+```{r}
+## KNN K=7 50%
+```
+
+```{r}
+start.time <- Sys.time()
+knn7_50.pred=knn(train.X_50,test.X_50,train.Y_50,k=7)
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+time.taken
+```
+
+```{r}
+Confussion_KNN7_50= table(knn7_50.pred,test.Y_50)
+Confussion_KNN7_50
+```
+
+```{r}
+Accuracy_KNN7_50= mean(knn7_50.pred==test.Y_50)
+Accuracy_KNN7_50
+```
+
+```{r}
+Sensitivity_KNN7_50= Confussion_KNN7_50[2,2]/(Confussion_KNN7_50[1,2]+Confussion_KNN7_50[2,2])
+Sensitivity_KNN7_50
+```
+
+```{r}
+Specificity_KNN7_50= Confussion_KNN7_50[1,1]/(Confussion_KNN7_50[1,1]+Confussion_KNN7_50[2,1])
+Specificity_KNN7_50
+```
