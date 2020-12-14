@@ -1,0 +1,658 @@
+---
+title: "Project 5 Data Analytics"
+author: "Skylar Furey"
+date: "11/10/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = T, comment = NA, message = FALSE,fig.width=7, fig.height=4)
+```
+
+```{r}
+library(ISLR)
+library(leaps)
+library(caTools)
+library(class)
+library(tidyverse)
+library(randomForest)
+library(gbm)
+library(tree)
+library(FNN)
+Concussions <- read.csv("~/Desktop/Data Mining/STT450_R_Folder/Concussion.csv", header = TRUE)
+Concussions$Position = as.factor(Concussions$Position)
+Concussions$Team = as.factor(Concussions$Team)
+Concussions$Season = as.factor(Concussions$Season)
+Concussions$Winning_Team = as.factor(Concussions$Winning_Team)
+set.seed(1)
+names(Concussions)
+```
+
+```{r}
+dim(Concussions)
+n=dim(Concussions)[1]
+m=dim(Concussions)[2]
+```
+```{r}
+#Classification
+```
+
+```{r}
+#Logistic Regression
+```
+
+```{r}
+start.time <- Sys.time()
+n_fold<-5;
+folds_i <- sample(rep(1:n_fold, length.out = n)) 
+OUT.LOG=NULL
+OUT.LOGTIME=NULL
+TRUTH = NULL
+OUTPUT=NULL
+for (k in 1:n_fold){
+test.ID <- which(folds_i == k)
+train_set <- Concussions[-test.ID, ]
+test_set <- Concussions[test.ID, ]
+glm.fit=glm(Winning_Team~Playtime_Before+Games_Missed,data=Concussions,family=binomial)
+glm.probs=predict(glm.fit,test_set,type="response")
+glm.pred=rep("0",length(test.ID))
+glm.pred[glm.probs>.5]="1"
+Accuracy=mean(glm.pred==test_set$Winning_Team) ## Prediction Accuracy
+OUT.LOG=c(OUT.LOG, Accuracy)
+TRUTH = c(TRUTH, test_set$Winning_Team)
+OUTPUT= c(OUTPUT, glm.pred)
+}
+end.time <- Sys.time()
+OUT.LOGTIME=NULL
+time.taken <- end.time - start.time
+OUT.LOGTIME=c(OUT.LOGTIME, time.taken)
+Confusion= table(OUTPUT, TRUTH)
+print(Confusion); print(OUT.LOGTIME); print(OUT.LOG)
+```
+```{r}
+LOG_Accuracy= mean(OUT.LOG); LOG_Error= sd(OUT.LOG)
+LOG_Accuracy; LOG_Error
+```
+
+```{r}
+LOG_Sensitivity= Confusion[2,2]/(Confusion[1,2]+Confusion[2,2]); LOG_Sensitivity
+```
+
+```{r}
+LOG_Specificity= Confusion[1,1]/(Confusion[1,1]+Confusion[2,1]); LOG_Specificity
+```
+
+```{r}
+#LDA
+```
+
+```{r}
+OUT.LDA=NULL
+TRUTH = NULL; 
+OUTPUT=NULL;
+start.time <- Sys.time()
+for (k in 1:n_fold)
+{
+test.ID <- which(folds_i == k)
+train_set <- Concussions[-test.ID, ]
+test_set <- Concussions[test.ID, ]
+lda.fit=MASS::lda(Winning_Team~Playtime_Before+Games_Missed,data=train_set)
+lda.pred=predict(lda.fit, test_set[,6:7])
+lda.class=lda.pred$class
+table(lda.class,test_set[,4])
+Accuracy=mean(lda.class==test_set[,4])
+OUT.LDA=c(OUT.LDA, Accuracy)
+TRUTH = c(TRUTH, test_set[,4])
+OUTPUT= c(OUTPUT, lda.class)
+}
+end.time <- Sys.time()
+OUT.LDATIME=NULL
+time.taken <- end.time - start.time
+OUT.LDATIME=c(OUT.LDATIME, time.taken)
+Confusion_LOG= table(OUTPUT, TRUTH)
+print(Confusion_LOG);print(OUT.LDATIME); print(OUT.LDA)
+```
+
+```{r}
+LDA_Accuracy= mean(OUT.LDA); LDA_Error= sd(OUT.LDA)
+LDA_Accuracy; LDA_Error
+```
+
+```{r}
+LDA_Sensitivity= Confusion_LOG[2,2]/(Confusion_LOG[1,2]+Confusion_LOG[2,2]); LDA_Sensitivity
+```
+
+```{r}
+LDA_Specificity= Confusion_LOG[1,1]/(Confusion_LOG[1,1]+Confusion_LOG[2,1]); LDA_Specificity
+```
+
+```{r}
+#QDA
+```
+
+```{r}
+OUT.QDA=NULL
+TRUTH = NULL; 
+OUTPUT=NULL;
+start.time <- Sys.time()
+for (k in 1:n_fold)
+{
+test.ID <- which(folds_i == k)
+train_set <- Concussions[-test.ID, ]
+test_set <- Concussions[test.ID, ]
+qda.fit=MASS::qda(Winning_Team~Playtime_Before+Games_Missed,data=train_set)
+qda.pred=predict(qda.fit, test_set[,6:7])
+qda.class=qda.pred$class
+table(qda.class,test_set[,4])
+Accuracy=mean(qda.class==test_set[,4])
+OUT.QDA=c(OUT.QDA, Accuracy)
+TRUTH = c(TRUTH, test_set[,4])
+OUTPUT= c(OUTPUT, qda.class)
+}
+end.time <- Sys.time()
+OUT.QDATIME=NULL
+time.taken <- end.time - start.time
+OUT.QDATIME=c(OUT.QDATIME, time.taken)
+Confusion_QDA= table(OUTPUT, TRUTH)
+print(Confusion_QDA);print(OUT.QDATIME); print(OUT.QDA)
+```
+
+```{r}
+QDA_Accuracy= mean(OUT.QDA); QDA_Error= sd(OUT.QDA)
+QDA_Accuracy; QDA_Error
+```
+
+```{r}
+QDA_Sensitivity= Confusion_QDA[2,2]/(Confusion_QDA[1,2]+Confusion_QDA[2,2]); QDA_Sensitivity
+```
+
+```{r}
+QDA_Specificity= Confusion_QDA[1,1]/(Confusion_QDA[1,1]+Confusion_QDA[2,1]); QDA_Specificity
+```
+
+```{r}
+#KNN=4
+```
+
+```{r}
+OUT.KNN=NULL
+TRUTH = NULL; 
+OUTPUT=NULL;
+start.time <- Sys.time()
+for (j in 1:n_fold)
+{
+test.ID <- which(folds_i == j)
+train_X <- Concussions[-test.ID, 6:7]
+train_Y <- Concussions[-test.ID, 4]
+test_X <- Concussions[test.ID, 6:7]
+test_Y <- Concussions[test.ID, 4]
+knn.pred=knn(train_X, test_X, train_Y, k=4)
+Accuracy=mean(knn.pred==test_Y)
+OUT.KNN=c(OUT.KNN, Accuracy)
+TRUTH = c(TRUTH, test_Y)
+OUTPUT= c(OUTPUT, knn.pred)
+}
+end.time <- Sys.time()
+OUT.KNNTIME=NULL
+time.taken <- end.time - start.time
+OUT.KNNTIME=c(OUT.KNNTIME, time.taken)
+Confusion_KNN= table(OUTPUT, TRUTH)
+print(Confusion_KNN);print(OUT.KNNTIME); print(OUT.KNN)
+```
+
+```{r}
+KNN_Accuracy= mean(OUT.KNN); KNN_Error= sd(OUT.KNN)
+KNN_Accuracy; KNN_Error
+```
+
+```{r}
+KNN_Sensitivity= Confusion_KNN[2,2]/(Confusion_KNN[1,2]+Confusion_KNN[2,2]); KNN_Sensitivity
+```
+
+```{r}
+KNN_Specificity= Confusion_KNN[1,1]/(Confusion_KNN[1,1]+Confusion_KNN[2,1]); KNN_Specificity
+```
+
+```{r}
+#Decision Tree
+```
+
+```{r}
+OUT.CLASS = NULL
+TRUTH = NULL; 
+OUTPUT=NULL;
+start.time <- Sys.time()
+for (j in 1:n_fold)
+{
+test.ID <- which(folds_i == j)
+train <- Concussions[-test.ID, ]
+concussions.test <- Concussions[test.ID, ]
+Winning_Team.test=concussions.test$Winning_Team[]
+tree.concussions=tree(Winning_Team~Playtime_Before+Games_Missed, train)
+tree.pred=predict(tree.concussions,concussions.test,type="class")
+TRUTH = c(TRUTH, Winning_Team.test)
+OUTPUT= c(OUTPUT, tree.pred)
+Accuracy=mean(tree.pred==Winning_Team.test)
+OUT.CLASS=c(OUT.CLASS, Accuracy)
+}
+end.time <- Sys.time()
+OUT.CLASSTIME=NULL
+time.taken <- end.time - start.time
+OUT.CLASSTIME=c(OUT.CLASSTIME, time.taken)
+Confusion_CLASS= table(OUTPUT, TRUTH)
+print(Confusion_CLASS);print(OUT.CLASSTIME); print(OUT.CLASS);
+```
+
+```{r}
+CLASS_Accuracy= mean(OUT.CLASS); CLASS_Error= sd(OUT.CLASS)
+CLASS_Accuracy; CLASS_Error
+```
+
+```{r}
+CLASS_Sensitivity= Confusion_CLASS[2,2]/(Confusion_CLASS[1,2]+Confusion_CLASS[2,2]); CLASS_Sensitivity
+```
+
+```{r}
+CLASS_Specificity= Confusion_CLASS[1,1]/(Confusion_CLASS[1,1]+Confusion_CLASS[2,1]); CLASS_Specificity
+```
+
+```{r}
+#Bagging Classification
+```
+
+```{r}
+OUT.BAG= NULL
+TRUTH = NULL; 
+OUTPUT=NULL;
+start.time <- Sys.time()
+for (j in 1:n_fold)
+{
+test.ID <- which(folds_i == j)
+train <- Concussions[-test.ID, ]
+test <- Concussions[test.ID, ]
+Winning_Team.test=test$Winning_Team[]
+train_set=train[,6:7]
+test_set=test[,6:7]
+test_Y=test[,4]
+bag.concussion=randomForest(Winning_Team~Playtime_Before+Games_Missed,data=train, mtry=2, ntree=500, importance=TRUE)
+bag.concussion
+bag.pred = predict(bag.concussion,test_set)
+TRUTH = c(TRUTH, test_Y)
+OUTPUT= c(OUTPUT, bag.pred)
+Accuracy=mean(bag.pred==test_Y)
+OUT.BAG=c(OUT.BAG, Accuracy)
+}
+end.time <- Sys.time()
+OUT.BAGTIME=NULL
+time.taken <- end.time - start.time
+OUT.BAGTIME=c(OUT.BAGTIME, time.taken)
+Confusion_BAG= table(OUTPUT, TRUTH)
+print(Confusion_BAG);print(OUT.BAGTIME); print(OUT.BAG)
+```
+
+```{r}
+BAG_Accuracy= mean(OUT.BAG); BAG_Error= sd(OUT.BAG)
+BAG_Accuracy; BAG_Error
+```
+
+```{r}
+BAG_Sensitivity= Confusion_BAG[2,2]/(Confusion_BAG[1,2]+Confusion_BAG[2,2]); BAG_Sensitivity
+```
+
+```{r}
+BAG_Specificity= Confusion_BAG[1,1]/(Confusion_BAG[1,1]+Confusion_BAG[2,1]); BAG_Specificity
+```
+
+```{r}
+#Random Forest Classification
+```
+
+```{r}
+OUT.RF= NULL
+TRUTH = NULL; 
+OUTPUT=NULL;
+start.time <- Sys.time()
+for (j in 1:n_fold)
+{
+test.ID <- which(folds_i == j)
+train <- Concussions[-test.ID, ]
+test <- Concussions[test.ID, ]
+Winning_Team.test=test$Winning_Team[]
+train_set=train[,6:7]
+test_set=test[,6:7]
+test_Y=test[,4]
+rf.concussion=randomForest(Winning_Team~Playtime_Before+Games_Missed,data=train, mtry=1, ntree=500, importance=TRUE)
+rf.concussion
+rf.pred = predict(rf.concussion,test_set)
+TRUTH = c(TRUTH, test_Y)
+OUTPUT= c(OUTPUT, rf.pred)
+Accuracy=mean(rf.pred==test_Y) 
+OUT.RF=c(OUT.RF, Accuracy)
+}
+end.time <- Sys.time()
+OUT.RFTIME=NULL
+time.taken <- end.time - start.time
+OUT.RFTIME=c(OUT.RFTIME, time.taken)
+Confusion_RF= table(OUTPUT, TRUTH)
+print(Confusion_RF);print(OUT.RFTIME); print(OUT.RF);
+```
+
+```{r}
+RF_Accuracy= mean(OUT.RF); RF_Error= sd(OUT.RF)
+RF_Accuracy; RF_Error
+```
+
+```{r}
+RF_Sensitivity= Confusion_RF[2,2]/(Confusion_RF[1,2]+Confusion_RF[2,2]); RF_Sensitivity
+```
+
+```{r}
+RF_Specificity= Confusion_RF[1,1]/(Confusion_RF[1,1]+Confusion_RF[2,1]); RF_Specificity
+```
+
+```{r}
+#Boosting Classification
+```
+
+```{r}
+OUT.BOOST = NULL
+TRUTH = NULL; 
+OUTPUT=NULL;
+start.time <- Sys.time()
+for (j in 1:n_fold)
+{
+test.ID <- which(folds_i == j)
+train <- Concussions[-test.ID, ]
+test <- Concussions[test.ID, ]
+Winning_Team.test=test$Winning_Team[]
+train_set=train[,6:7]
+test_set=test[,6:7]
+test_Y=test[,4]
+N.TREE=500
+gbm_algorithm= gbm((as.numeric(Winning_Team)-1)~Playtime_Before+Games_Missed,data=train, distribution = "bernoulli", n.trees = N.TREE, shrinkage=0.01, interaction.depth = 2)
+gbm_predicted= predict(gbm_algorithm, test_set, n.trees = N.TREE, type = 'response')
+boost.pred=gbm_predicted;
+boost.pred=factor(ifelse(boost.pred<=0.5, 0, 1))
+TRUTH = c(TRUTH, test_Y)
+OUTPUT= c(OUTPUT, boost.pred)
+Accuracy=mean(boost.pred==test_Y) 
+OUT.BOOST=c(OUT.BOOST, Accuracy)
+}
+end.time <- Sys.time()
+OUT.BOOSTTIME=NULL
+time.taken <- end.time - start.time
+OUT.BOOSTTIME=c(OUT.BOOSTTIME, time.taken)
+Confusion_BOOST= table(OUTPUT, TRUTH)
+print(Confusion_BOOST);print(OUT.BOOSTTIME); print(OUT.BOOST);
+```
+
+```{r}
+BOOST_Accuracy= mean(OUT.BOOST); BOOST_Error= sd(OUT.BOOST)
+BOOST_Accuracy; BOOST_Error
+```
+
+```{r}
+BOOST_Sensitivity= Confusion_BOOST[2,2]/(Confusion_BOOST[1,2]+Confusion_BOOST[2,2]); BOOST_Sensitivity
+```
+
+```{r}
+BOOST_Specificity= Confusion_BOOST[1,1]/(Confusion_BOOST[1,1]+Confusion_BOOST[2,1]); BOOST_Specificity
+```
+
+```{r}
+library(sciplot) 
+require(gplots) #for smartlegend
+Bestrate=t(cbind(t(OUT.LOG), t(OUT.LDA), t(OUT.QDA), t(OUT.KNN), t(OUT.CLASS), t(OUT.BAG), t(OUT.RF), t(OUT.BOOST)))
+Type=c(rep("LDA", 5), rep("LOG", 5), rep("QDA", 5), rep("KNN", 5), rep("D.T.", 5), rep("BAG", 5), rep("R.F.", 5), rep("BOOST",5))
+Dat=data.frame(cbind(Bestrate, Type))
+```
+
+```{r}
+boxplot(Bestrate ~ Type, data=Dat, xlab = "Methods", ylab = "Accuracy",
+col=c("darkgreen", "darkorange", "yellow", "orange", "purple", "green", "blue", "red"), cex.axes=1,
+main = "Accuracy using 5-Fold CV for Concussions data", cex.main=1.5)
+legend(x="bottomleft", inset = 0,
+c("Bagging", "Boosting", "Decision Tree", "KNN","LDA", "Logistic", "QDA", "Random Forest"), cex=.4,
+fill = c("darkgreen", "darkorange", "yellow", "orange", "purple", "green", "blue", "red"))
+```
+
+```{r}
+Bestrate_Acc=t(cbind(t(LOG_Accuracy), t(LDA_Accuracy), t(QDA_Accuracy), t(KNN_Accuracy), t(CLASS_Accuracy), t(BAG_Accuracy), t(RF_Accuracy), t(BOOST_Accuracy)))
+Type_Acc=c(rep("LOG", 1), rep("LDA", 1), rep("QDA", 1), rep("KNN", 1), rep("TREE", 1), rep("BAG", 1), rep("RF", 1), rep("BOOST",1))
+Dat_Acc=data.frame(cbind(Bestrate_Acc, Type_Acc))
+```
+
+```{r}
+acc= barplot(Bestrate_Acc ~ Type_Acc, data=Dat_Acc, xlab = "Methods", ylab = "Accuracy", ylim=c(0,1),
+col= "red",
+main = "Overall Accuracy for Concussions data", cex.main=1.5)
+```
+
+```{r}
+Bestrate_Error=t(cbind(t(LOG_Error), t(LDA_Error), t(QDA_Error), t(KNN_Error), t(CLASS_Error), t(BAG_Error), t(RF_Error), t(BOOST_Error)))
+Type_Error=c(rep("LOG", 1), rep("LDA", 1), rep("QDA", 1), rep("KNN", 1), rep("TREE", 1), rep("BAG", 1), rep("RF", 1), rep("BOOST",1))
+Dat_Error=data.frame(cbind(Bestrate_Error, Type_Error))
+```
+
+```{r}
+error= barplot(Bestrate_Error ~ Type_Error, data=Dat_Error, xlab = "Methods", ylab = "Standard Error", ylim=c(0,.1),
+col= "orange",
+main = "Standard Error for Concussions data", cex.main=1.5)
+```
+
+```{r}
+Bestrate2=t(cbind(t(OUT.LOGTIME), t(OUT.LDATIME), t(OUT.QDATIME), t(OUT.KNNTIME), t(OUT.CLASSTIME), t(OUT.BAGTIME), t(OUT.RFTIME), t(OUT.BOOSTTIME)))
+Type2=c(rep("LOG", 1), rep("LDA", 1), rep("QDA", 1), rep("KNN", 1), rep("TREE", 1), rep("BAG", 1), rep("RF", 1), rep("BOOST",1))
+Dat2=data.frame(cbind(Bestrate2, Type2))
+```
+
+```{r}
+runtime= barplot(Bestrate2 ~ Type2, data=Dat2, xlab = "Methods", ylab = "Runtime (sec)", ylim=c(0,2.5),
+col= "yellow",
+main = "Overall Runtime for Classification on Concussions data", cex.main=1.5)
+```
+
+```{r}
+Bestrate_Sens=t(cbind(t(LOG_Sensitivity), t(LDA_Sensitivity), t(QDA_Sensitivity), t(KNN_Sensitivity), t(CLASS_Sensitivity), t(BAG_Sensitivity), t(RF_Sensitivity), t(BOOST_Sensitivity)))
+Type_Sens=c(rep("LOG", 1), rep("LDA", 1), rep("QDA", 1), rep("KNN", 1), rep("TREE", 1), rep("BAG", 1), rep("RF", 1), rep("BOOST",1))
+Dat_Sens=data.frame(cbind(Bestrate_Sens, Type_Sens))
+```
+
+```{r}
+sens= barplot(Bestrate_Sens ~ Type_Sens, data=Dat_Sens, xlab = "Methods", ylab = "Sensitivity", ylim=c(0,1),
+col= "green",
+main = "Overall Sensitivity for Concussions data", cex.main=1.5)
+```
+
+```{r}
+Bestrate_Spec=t(cbind(t(LOG_Specificity), t(LDA_Specificity), t(QDA_Specificity), t(KNN_Specificity), t(CLASS_Specificity), t(BAG_Specificity), t(RF_Specificity), t(BOOST_Specificity)))
+Type_Spec=c(rep("LOG", 1), rep("LDA", 1), rep("QDA", 1), rep("KNN", 1), rep("TREE", 1), rep("BAG", 1), rep("RF", 1), rep("BOOST",1))
+Dat_Spec=data.frame(cbind(Bestrate_Spec, Type_Spec))
+```
+
+```{r}
+spec=barplot(Bestrate_Spec ~ Type_Spec, data=Dat_Spec, xlab = "Methods", ylab = "Specificity", ylim=c(0,1),
+col= "blue",
+main = "Overall Specificity for Concussions data", cex.main=1.5)
+```
+
+```{r}
+#Regression
+```
+
+```{r}
+#Quadratic
+```
+
+```{r}
+OUT.LINEAR= NULL
+start.time <- Sys.time()
+for (j in 1:n_fold)
+{
+test.ID <- which(folds_i == j)
+train <- Concussions[-test.ID, ]
+test <- Concussions[test.ID, ]
+test_Y <- test[,8]
+linear.concussions =lm(Playtime_After~Playtime_Before * Games_Missed, data= Concussions)
+yhat.lin=predict(linear.concussions,newdata=test)
+MSE=mean((yhat.lin-test_Y)^2)
+OUT.LINEAR=c(OUT.LINEAR, MSE)
+}
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+OUT.LINEARTIME= NULL
+OUT.LINEARTIME=c(OUT.LINEARTIME, time.taken)
+print(OUT.LINEARTIME); print(mean(OUT.LINEAR))
+```
+
+```{r}
+#KNN Regression
+```
+
+```{r}
+OUT.KNNREG= NULL
+start.time <- Sys.time()
+for (j in 1:n_fold)
+{
+test.ID <- which(folds_i == j)
+train <- Concussions[-test.ID, ]
+test <- Concussions[test.ID, ]
+train_X <- train[, 6:7]
+train_Y <- train[, 8]
+test_X <- test[, 6:7]
+test_Y <- test[, 8]
+concussions.test <- Concussions[test.ID, ]
+knn4.reg= knn.reg(train_X, test_X, train_Y, k=4)
+MSE=mean((knn4.reg$pred-test_Y)^2)
+OUT.KNNREG=c(OUT.KNNREG, MSE)
+}
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+OUT.KNNREGTIME= NULL
+OUT.KNNREGTIME=c(OUT.KNNREGTIME, time.taken)
+print(OUT.KNNREGTIME); print(mean(OUT.KNNREG))
+```
+
+```{r}
+#Decision Tree
+```
+
+```{r}
+OUT.TREEREG= NULL
+start.time <- Sys.time()
+for (j in 1:n_fold)
+{
+test.ID <- which(folds_i == j)
+train <- Concussions[-test.ID, ]
+test <- Concussions[test.ID, ]
+test_Y <- test[,8]
+tree.concussions=tree(Playtime_After~Playtime_Before + Games_Missed,train)
+yhat.reg=predict(tree.concussions,newdata=test)
+MSE=mean((yhat.reg-test_Y)^2)
+OUT.TREEREG=c(OUT.TREEREG, MSE)
+}
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+OUT.TREEREGTIME= NULL
+OUT.TREEREGTIME=c(OUT.TREEREGTIME, time.taken)
+print(OUT.TREEREGTIME); print(mean(OUT.TREEREG))
+```
+
+```{r}
+#Bagging Regression
+```
+
+```{r}
+OUT.BAGREG= NULL
+start.time <- Sys.time()
+for (j in 1:n_fold)
+{
+test.ID <- which(folds_i == j)
+train <- Concussions[-test.ID, ]
+test <- Concussions[test.ID, ]
+test_Y <- test[,8]
+bag.concussion=randomForest(Playtime_After~Playtime_Before + Games_Missed,data=train,mtry=2,importance=TRUE)
+yhat.bag = predict(bag.concussion,newdata=test)
+MSE=mean((yhat.bag-test_Y)^2)
+OUT.BAGREG=c(OUT.BAGREG, MSE)
+}
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+OUT.BAGREGTIME= NULL
+OUT.BAGREGTIME=c(OUT.BAGREGTIME, time.taken)
+print(OUT.BAGREGTIME); print(mean(OUT.BAGREG))
+```
+
+```{r}
+#Random Forest Regression
+```
+
+```{r}
+OUT.RFREG= NULL
+start.time <- Sys.time()
+for (j in 1:n_fold)
+{
+test.ID <- which(folds_i == j)
+train <- Concussions[-test.ID, ]
+test <- Concussions[test.ID, ]
+test_Y <- test[,8]
+rf.concussion=randomForest(Playtime_After~Playtime_Before + Games_Missed,data=train,mtry=1,importance=TRUE)
+yhat.rf = predict(rf.concussion,newdata=test)
+MSE=mean((yhat.rf-test_Y)^2)
+OUT.RFREG=c(OUT.RFREG, MSE)
+}
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+OUT.RFREGTIME= NULL
+OUT.RFREGTIME=c(OUT.RFREGTIME, time.taken)
+print(OUT.RFREGTIME); print(mean(OUT.RFREG))
+```
+
+```{r}
+#Boosting Regression
+```
+
+```{r}
+OUT.BOOSTREG= NULL
+start.time <- Sys.time()
+for (j in 1:n_fold)
+{
+test.ID <- which(folds_i == j)
+train <- Concussions[-test.ID, ]
+test <- Concussions[test.ID, ]
+test_Y <- test[,8]
+boost.concussions=gbm(Playtime_After~Playtime_Before + Games_Missed,data=train,distribution="gaussian",n.trees=5000,interaction.depth=4)
+yhat.boost=predict(boost.concussions,newdata=test,n.trees=5000)
+MSE=mean((yhat.boost-test_Y)^2)
+OUT.BOOSTREG=c(OUT.BOOSTREG, MSE)
+}
+end.time <- Sys.time()
+time.taken <- end.time - start.time
+OUT.BOOSTREGTIME= NULL
+OUT.BOOSTREGTIME=c(OUT.BOOSTREGTIME, time.taken)
+print(OUT.BOOSTREGTIME); print(mean(OUT.BOOSTREG));
+```
+
+```{r}
+Bestrate3=t(cbind(t(OUT.KNNREG), t(OUT.TREEREG), t(OUT.BAGREG), t(OUT.RFREG), t(OUT.BOOSTREG),t(OUT.LINEAR)))
+Type3=c(rep("KNN", 5), rep("D.T.", 5), rep("Bagging", 5), rep("R.F.", 5), rep("Boosting",5), rep("Quadratic",5))
+Dat3=data.frame(cbind(Bestrate3, Type3))
+```
+
+```{r}
+boxplot(Bestrate3 ~ Type3, data=Dat3, xlab = "Methods", ylab = "MSE", ylim=c(300,900),
+col=c("darkgreen", "darkorange", "yellow", "blue", "purple","red"), cex.axes=1,
+main = "Boxplot for MSE on Concussions data", cex.main=1.5)
+```
+
+```{r}
+Bestrate4=t(cbind(t(OUT.BAGREGTIME), t(OUT.BOOSTREGTIME), t(OUT.TREEREGTIME), t(OUT.KNNREGTIME), t(OUT.LINEARTIME), t(OUT.RFREGTIME)))
+Type4=c(rep("Bagging", 1), rep("Boost", 1), rep("D.T.", 1), rep("KNN", 1),  rep("Quadratic",1), rep("R.F.", 1))
+Dat4=data.frame(cbind(Bestrate4, Type4))
+```
+
+```{r}
+barplot(Bestrate4 ~ Type4, data=Dat4, xlab = "Methods", ylab = "Runtime (sec)", ylim=c(0,4),
+col= "purple",
+main = "Overall Runtime for Regression on Concussions data", cex.main=1.5)
+```
